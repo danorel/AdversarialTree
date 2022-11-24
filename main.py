@@ -2,8 +2,10 @@ import math
 
 from typing import List
 
+from search import TrieSearch
+from search.alpha_beta import AlphaBetaSearch
+from search.min_max import GreedyMinMaxSearch, GreedyMinMaxIterativeDeepeningSearch, MinMaxSearch
 from tree import VariationalTrie
-from search import AlphaBetaSearch, MinMaxSearch, MinMaxIterativeDeepeningSearch, TrieSearch
 
 
 def comparator(search_algorithms: List[TrieSearch]):
@@ -20,7 +22,8 @@ def comparator(search_algorithms: List[TrieSearch]):
 def main():
     comparator([
         MinMaxSearch(),
-        MinMaxIterativeDeepeningSearch(),
+        GreedyMinMaxSearch(),
+        GreedyMinMaxIterativeDeepeningSearch(),
         AlphaBetaSearch(
             alpha=math.inf,
             beta=+math.inf
