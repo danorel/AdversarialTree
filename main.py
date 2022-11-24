@@ -4,15 +4,20 @@ from typing import List
 
 from search import TrieSearch
 from search.alpha_beta import AlphaBetaSearch
-from search.min_max import GreedyMinMaxSearch, GreedyMinMaxIterativeDeepeningSearch, MinMaxSearch
+from search.min_max import \
+    GreedyMinMaxSearch, \
+    GreedyMinMaxIterativeDeepeningSearch, \
+    ClassicMinMaxSearch, \
+    ClassicMinMaxIterativeDeepeningSearch
 from tree import VariationalTrie
 
 
 def comparator(search_algorithms: List[TrieSearch]):
     trie = VariationalTrie(
         value_boundaries=(1, 100),
-        branching_factor=(1, 5),
-        depth=(10, 15)
+        branching_factor=(1, 4),
+        depth=(15, 17),
+        debug=True
     )
     print(trie)
     for search_algorithm in search_algorithms:
@@ -21,9 +26,14 @@ def comparator(search_algorithms: List[TrieSearch]):
 
 def main():
     comparator([
-        MinMaxSearch(),
         GreedyMinMaxSearch(),
-        GreedyMinMaxIterativeDeepeningSearch(),
+        GreedyMinMaxIterativeDeepeningSearch(
+            max_depth=20
+        ),
+        ClassicMinMaxSearch(),
+        ClassicMinMaxIterativeDeepeningSearch(
+            max_depth=20
+        ),
         AlphaBetaSearch(
             alpha=math.inf,
             beta=+math.inf

@@ -4,6 +4,12 @@ from typing import Tuple, List
 from random import random
 
 
+class VariationalUtils:
+    @staticmethod
+    def generate_value(min_value: int, max_value: int):
+        return min_value + math.floor(random() * (max_value - min_value))
+
+
 class VariationalNode:
     def __init__(self, value: int):
         self.value = value
@@ -17,14 +23,22 @@ class VariationalTrie:
     def __init__(self,
                  value_boundaries: Tuple[int, int],
                  branching_factor: Tuple[int, int],
-                 depth: Tuple[int, int]):
+                 depth: Tuple[int, int],
+                 debug: bool = False):
+        self._debug = debug
         # Value boundaries
         self._value_boundaries = value_boundaries
+        if self._debug:
+            print(f"Initializing tree with value boundaries: {self._value_boundaries}")
         # Branching factor boundaries
         self._branching_factor = branching_factor
+        if self._debug:
+            print(f"Initializing tree with branching factors: {self._branching_factor}")
         # Depth of the search
         min_depth, max_depth = depth
-        self._depth = min_depth + math.floor(random() * (max_depth - min_depth))
+        self._depth = VariationalUtils.generate_value(min_depth, max_depth)
+        if self._debug:
+            print(f"Initializing tree with depth: {self._depth}")
         # Tree itself
         self.root: VariationalNode or None = self._generate_deeply(None, 0)
 
@@ -33,17 +47,18 @@ class VariationalTrie:
             return None
         if node is None:
             min_value, max_value = self._value_boundaries
-            value = min_value + math.floor(random() * (max_value - min_value))
+            value = VariationalUtils.generate_value(min_value, max_value)
             node = VariationalNode(value)
         min_branching_factor, max_branching_factor = self._branching_factor
-        branching_factor = min_branching_factor + math.floor(random() * (max_branching_factor - min_branching_factor))
+        branching_factor = VariationalUtils.generate_value(min_branching_factor, max_branching_factor)
         for _ in range(branching_factor):
             child_node = self._generate_deeply(None, current_depth + 1)
             node.children.append(child_node)
         return node
 
     def __repr__(self):
-        representation = f"depth = {self._depth + 1} \n"
+        tree_size = 0
+        tree_repr = f"depth = {self._depth + 1}\n"
         queue, depth = [self.root], 0
         while len(queue) > 0:
             size = len(queue)
@@ -55,6 +70,9 @@ class VariationalTrie:
                         queue.append(child)
                 layer_size += 1
                 size -= 1
-            representation += ' ' * depth + f"{layer_size} branches\n"
+            layer_label = "node" if layer_size == 1 else "nodes"
+            tree_repr += ' ' * depth + f"{layer_size} {layer_label}\n"
             depth += 1
-        return f"Tree: {representation}"
+            tree_size += layer_size
+        tree_repr += f"Size: {tree_size} nodes"
+        return f"Tree: {tree_repr}"
