@@ -11,9 +11,9 @@ class VariationalUtils:
 
 
 class VariationalNode:
-    def __init__(self, value: int):
+    def __init__(self, value: int, children=None):
         self.value = value
-        self.children: List[VariationalNode] = []
+        self.children: List[VariationalNode] = [] if children is None else children
 
     def __repr__(self):
         return f"Node: {self.value}"
