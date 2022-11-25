@@ -4,11 +4,23 @@ from search import TrieSearch, TrieSearchUtils
 from tree import VariationalNode, VariationalTrie
 
 
-class GreedyMinMaxUtils:
+class CommonMinMaxUtils:
     @staticmethod
-    def find_max(node: VariationalNode):
-        if node is None:
-            return None
+    def is_terminal(node: VariationalNode):
+        return len(node.children) == 0 or all(child is None for child in node.children)
+
+    @staticmethod
+    def find_max(node: VariationalNode, *args):
+        pass
+
+    @staticmethod
+    def find_min(node: VariationalNode, *args):
+        pass
+
+
+class GreedyMinMaxUtils(CommonMinMaxUtils):
+    @staticmethod
+    def find_max(node: VariationalNode, *args):
         max_value, max_child = -math.inf, None
         for child in node.children:
             if child is None:
@@ -16,14 +28,10 @@ class GreedyMinMaxUtils:
             if max_value < child.value:
                 max_value = child.value
                 max_child = child
-        if max_child is None:
-            return node
         return max_child
 
     @staticmethod
-    def find_min(node: VariationalNode):
-        if node is None:
-            return None
+    def find_min(node: VariationalNode, *args):
         min_value, min_child = math.inf, None
         for child in node.children:
             if child is None:
@@ -42,17 +50,17 @@ class GreedyMinMaxSearch(TrieSearch):
         return self._search_max(trie.root)
 
     def _search_max(self, node: VariationalNode):
-        max_child = GreedyMinMaxUtils.find_max(node)
-        if max_child is None or not TrieSearchUtils.is_memory_available():
+        if GreedyMinMaxUtils.is_terminal(node) or not TrieSearchUtils.is_memory_available():
             return node.value
+        max_child = GreedyMinMaxUtils.find_max(node)
         if self._debug:
             print(f"Max: {max_child} from {node.children}")
         return self._search_min(max_child)
 
     def _search_min(self, node: VariationalNode):
-        min_child = GreedyMinMaxUtils.find_min(node)
-        if min_child is None or not TrieSearchUtils.is_memory_available():
+        if GreedyMinMaxUtils.is_terminal(node) or not TrieSearchUtils.is_memory_available():
             return node.value
+        min_child = GreedyMinMaxUtils.find_min(node)
         if self._debug:
             print(f"Min: {min_child} from {node.children}")
         return self._search_max(min_child)
@@ -67,59 +75,55 @@ class GreedyMinMaxIterativeDeepeningSearch(GreedyMinMaxSearch):
         value = 0
         depth = 0
         while True:
-            if depth >= self._max_depth:
+            if depth >= self._max_depth or not TrieSearchUtils.is_memory_available():
                 return value
-            if not TrieSearchUtils.is_memory_available():
-                return value
-            value, is_leaf = self._search_max_deepening(trie.root, depth, 0)
-            if is_leaf:
+            value, is_terminal = self._search_max_deepening(trie.root, depth, 0)
+            if is_terminal:
                 return value
             depth += 1
 
     def _search_max_deepening(self, node: VariationalNode, max_depth: int, current_depth: int):
+        if GreedyMinMaxUtils.is_terminal(node):
+            return node.value, True
         if current_depth >= max_depth:
             return node.value, False
         max_child = GreedyMinMaxUtils.find_max(node)
-        if max_child is None:
-            return node.value, True
         if self._debug:
             print(f"Max: {max_child} in {current_depth} from {node.children}")
         return self._search_min_deepening(max_child, max_depth, current_depth + 1)
 
     def _search_min_deepening(self, node: VariationalNode, max_depth: int, current_depth: int):
+        if GreedyMinMaxUtils.is_terminal(node):
+            return node.value, True
         if current_depth >= max_depth:
             return node.value, False
         min_child = GreedyMinMaxUtils.find_min(node)
-        if min_child is None:
-            return node.value, True
         if self._debug:
             print(f"Min: {min_child} in {current_depth} from {node.children}")
         return self._search_max_deepening(min_child, max_depth, current_depth + 1)
 
 
-class ClassicMinMaxUtils:
+class ClassicMinMaxUtils(CommonMinMaxUtils):
     @staticmethod
-    def is_terminal(node: VariationalNode):
-        return len(node.children) == 0 or all(child is None for child in node.children)
-
-    @staticmethod
-    def find_max(node: VariationalNode, func_recursive_min, *args):
+    def find_max(node: VariationalNode, *args):
         max_value = -math.inf
         for child in node.children:
             if child is None:
                 continue
-            child_value = func_recursive_min(child, *args)
+            min_recursive_func, *rest_recursive_func_args = args
+            child_value = min_recursive_func(child, *rest_recursive_func_args)
             if max_value < child_value:
                 max_value = child_value
         return max_value
 
     @staticmethod
-    def find_min(node: VariationalNode, func_recursive_max, *args):
+    def find_min(node: VariationalNode, *args):
         min_value = +math.inf
         for child in node.children:
             if child is None:
                 continue
-            child_value = func_recursive_max(child, *args)
+            max_recursive_func, *rest_recursive_func_args = args
+            child_value = max_recursive_func(child, *rest_recursive_func_args)
             if min_value > child_value:
                 min_value = child_value
         return min_value
@@ -160,21 +164,21 @@ class ClassicMinMaxIterativeDeepeningSearch(TrieSearch):
         while True:
             if depth >= self._max_depth or not TrieSearchUtils.is_memory_available():
                 return value
-            value = self._search_max_deepening(trie.root, depth, 0)
+            value = self._search_max(trie.root, depth, 0)
             depth += 1
 
-    def _search_max_deepening(self, node: VariationalNode, max_depth: int, current_depth: int):
+    def _search_max(self, node: VariationalNode, max_depth: int, current_depth: int):
         if ClassicMinMaxUtils.is_terminal(node) or current_depth >= max_depth:
             return node.value
-        max_value = ClassicMinMaxUtils.find_max(node, self._search_min_deepening, max_depth, current_depth + 1)
+        max_value = ClassicMinMaxUtils.find_max(node, self._search_min, max_depth, current_depth + 1)
         if self._debug:
             print(f"Max: {max_value} in {current_depth} from {node.children}")
         return max_value
 
-    def _search_min_deepening(self, node: VariationalNode, max_depth: int, current_depth: int):
+    def _search_min(self, node: VariationalNode, max_depth: int, current_depth: int):
         if ClassicMinMaxUtils.is_terminal(node) or current_depth >= max_depth:
             return node.value
-        min_value = ClassicMinMaxUtils.find_min(node, self._search_max_deepening, max_depth, current_depth + 1)
+        min_value = ClassicMinMaxUtils.find_min(node, self._search_max, max_depth, current_depth + 1)
         if self._debug:
             print(f"Min: {min_value} in {current_depth} from {node.children}")
         return min_value
