@@ -3,7 +3,7 @@ import math
 from typing import List
 
 from search import TrieSearch
-from search.alpha_beta import AlphaBetaSearch
+from search.alpha_beta import ClassicAlphaBetaSearch
 from search.min_max import \
     GreedyMinMaxSearch, \
     GreedyMinMaxIterativeDeepeningSearch, \
@@ -16,7 +16,7 @@ def comparator(search_algorithms: List[TrieSearch]):
     trie = VariationalTrie(
         value_boundaries=(1, 100),
         branching_factor=(1, 4),
-        depth=(15, 17),
+        depth=(17, 18),
         debug=True
     )
     print(trie)
@@ -34,10 +34,7 @@ def main():
         ClassicMinMaxIterativeDeepeningSearch(
             max_depth=20
         ),
-        AlphaBetaSearch(
-            alpha=math.inf,
-            beta=+math.inf
-        )
+        ClassicAlphaBetaSearch()
     ])
 
 

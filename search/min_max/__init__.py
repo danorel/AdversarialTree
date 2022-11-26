@@ -2,6 +2,7 @@ import math
 
 from search import TrieSearch, TrieSearchUtils
 from tree import VariationalNode, VariationalTrie
+from utils import time_it
 
 
 class CommonMinMaxUtils:
@@ -46,6 +47,7 @@ class GreedyMinMaxSearch(TrieSearch):
     def __init__(self, debug: bool = False):
         super(GreedyMinMaxSearch, self).__init__(debug)
 
+    @time_it()
     def search(self, trie: VariationalTrie):
         return self._search_max(trie.root)
 
@@ -71,6 +73,7 @@ class GreedyMinMaxIterativeDeepeningSearch(GreedyMinMaxSearch):
         super(GreedyMinMaxIterativeDeepeningSearch, self).__init__(debug)
         self._max_depth = max_depth
 
+    @time_it()
     def search(self, trie: VariationalTrie):
         value = 0
         depth = 0
@@ -133,6 +136,7 @@ class ClassicMinMaxSearch(TrieSearch):
     def __init__(self, debug: bool = False):
         super(ClassicMinMaxSearch, self).__init__(debug)
 
+    @time_it()
     def search(self, trie: VariationalTrie):
         return self._search_max(trie.root)
 
@@ -158,6 +162,7 @@ class ClassicMinMaxIterativeDeepeningSearch(TrieSearch):
         super(ClassicMinMaxIterativeDeepeningSearch, self).__init__(debug)
         self._max_depth = max_depth
 
+    @time_it()
     def search(self, trie: VariationalTrie):
         value = 0
         depth = 0
