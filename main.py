@@ -1,5 +1,3 @@
-import math
-
 from typing import List
 
 from search import TrieSearch
@@ -15,8 +13,8 @@ from tree import VariationalTrie
 def comparator(search_algorithms: List[TrieSearch]):
     trie = VariationalTrie(
         value_boundaries=(1, 100),
-        branching_factor=(1, 4),
-        depth=(17, 18),
+        branching_factor=(30, 35),
+        depth=(3, 5),
         debug=True
     )
     print(trie)
